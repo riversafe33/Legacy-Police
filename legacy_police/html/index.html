@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .nui {
+            position: fixed;
+            bottom: 36px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.9);
+            border: 2px solid #916b3abe;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            max-width: 300px;
+            color: #916b3abe;
+            text-align: right;
+            display: none;
+            overflow: auto;
+        }
+
+        .nui h4 {
+            margin: 0 0 10px;
+            font-size: 26px;
+            color: #916b3abe;
+            text-align: left;
+        }
+
+        .nui p {
+            margin: 5px 0;
+            font-size: 20px;
+            text-align: left;
+        }
+
+        #jailTimer {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #916b3abe;
+            font-family: Arial, sans-serif;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .container-comisary,
+        .container-task,
+        .container-wagon, 
+        .container-cabinet,
+        .container-search,
+        .container-storage {
+            position: absolute;
+            right: 2%;
+            top: 90%;
+            transform: translateY(-50%);
+            width: 150px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(156, 112, 60, 0.829);
+            border-radius: 15px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+        }
+
+        .title-comisary,
+        .title-task,
+        .title-wagon,
+        .title-cabinet,
+        .title-search,
+        .title-storage {
+            font-size: 18px;
+            font-weight: bold;
+            color: rgba(156, 112, 60, 0.829);
+            margin: 0;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nui" id="controlPanel">
+        <h4 id="panelTitle"></h4>
+        <div id="panelControls"></div>
+    </div>
+
+    <div id="jailTimer"></div>
+
+    <div class="container-comisary">
+        <div class="title-comisary" id="comisaryText"></div>
+    </div>
+
+    <div class="container-task">
+        <div class="title-task" id="taskText"></div>
+    </div>
+
+    <div class="container-wagon">
+        <div class="title-wagon" id="wagonText"></div>
+    </div>
+
+    <div class="container-cabinet">
+        <div class="title-cabinet" id="cabinetText"></div>
+    </div>
+
+    <div class="container-search">
+        <div class="title-search" id="searchText"></div>
+    </div>
+
+    <div class="container-storage">
+        <div class="title-storage" id="storageText"></div>
+    </div>
+
+    <script>
+        window.addEventListener('message', function(event) {
+            const data = event.data;
+
+            const controlPanel = document.getElementById('controlPanel');
+            const panelTitle = document.getElementById('panelTitle');
+            const panelControls = document.getElementById('panelControls');
+
+            const timer = document.getElementById('jailTimer');
+            const comisary = document.querySelector('.container-comisary');
+            const task = document.querySelector('.container-task');
+            const wagon = document.querySelector('.container-wagon');
+            const cabinet = document.querySelector('.container-cabinet');
+            const search = document.querySelector('.container-search');
+            const storage = document.querySelector('.container-storage');
+            const comisaryText = document.getElementById('comisaryText');
+            const taskText = document.getElementById('taskText');
+            const wagonText = document.getElementById('wagonText');
+            const cabinetText = document.getElementById('cabinetText');
+            const searchText = document.getElementById('searchText');
+            const storageText = document.getElementById('storageText');
+
+            if (data.action === "showpanel") {
+                controlPanel.style.display = 'block';
+                panelTitle.textContent = data.title;
+                panelControls.innerHTML = "";
+                if (data.controls && Array.isArray(data.controls)) {
+                    data.controls.forEach(ctrl => {
+                        const p = document.createElement('p');
+                        p.textContent = ctrl;
+                        panelControls.appendChild(p);
+                    });
+                }
+            } else if (data.action === "hidepanel") {
+                controlPanel.style.display = 'none';
+            }
+
+            if (data.type === 'updateJailTime') {
+                timer.style.display = 'block';
+                timer.textContent = `${data.text || ''}: ${data.time}s`;
+            }
+
+            if (data.type === 'hideJailTime') {
+                timer.style.display = 'none';
+            }
+
+            if (data.type === 'showComisary') {
+                comisaryText.textContent = data.text || '';
+                comisary.style.display = 'block';
+            }
+
+            if (data.type === 'hideComisary') {
+                comisary.style.display = 'none';
+            }
+
+            if (data.type === 'showTask') {
+                taskText.textContent = data.text || '';
+                task.style.display = 'block';
+            }
+
+            if (data.type === 'hideTask') {
+                task.style.display = 'none';
+            }
+
+            if (data.type === 'showWagon') {
+                wagonText.textContent = data.text || '';
+                wagon.style.display = 'block';
+            }
+
+            if (data.type === 'hideWagon') {
+                wagon.style.display = 'none';
+            }
+
+            if (data.type === 'showCabinet') {
+                cabinetText.textContent = data.text || '';
+                cabinet.style.display = 'block';
+            }
+
+            if (data.type === 'hideCabinet') {
+                cabinet.style.display = 'none';
+            }
+
+            if (data.type === 'showSearch') {
+                searchText.textContent = data.text || '';
+                search.style.display = 'block';
+            }
+
+            if (data.type === 'hideSearch') {
+                search.style.display = 'none';
+            }
+
+            if (data.type === 'showStorage') {
+                storageText.textContent = data.text || '';
+                storage.style.display = 'block';
+            }
+
+            if (data.type === 'hideStorage') {
+                storage.style.display = 'none';
+            }
+        });
+    </script>
+
+</body>
+</html>
