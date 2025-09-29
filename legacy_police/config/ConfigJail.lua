@@ -29,9 +29,9 @@ ConfigJail.Jails = {
                enable = true, -- true enables a point in Sisika where the prisoner can collect water and food, they can only collect it once -- false there will be no point to collect water and food
                coords = { x = 3371.04, y = -658.16, z = 46.29 },
                Items = {
-                   { name = "consumable_salmon_can", label = "Salmón en lata", amount = 1 },
-                   { name = "water", label = "Agua", amount = 1 },
-                   { name = "bread", label = "Pan", amount = 2 },
+                   { name = "consumable_salmon_can", label = "Salmon can", amount = 1 },
+                   { name = "water", label = "Water", amount = 1 },
+                   { name = "bread", label = "Bread", amount = 2 },
                }
           },
      },
