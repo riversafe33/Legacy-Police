@@ -363,8 +363,6 @@ AddEventHandler('lawmen:JailPlayer', function(time, Location)
     Jail_time = time
     Jailed = true
 
-    RemoveAllPedWeapons(ped, true)
-
     if Autotele and JailEntranceCoords then
         DoScreenFadeOut(1000)
         Wait(4000)
@@ -400,7 +398,6 @@ AddEventHandler("lawmen:wear_prison", function()
         Citizen.InvokeNative(0xD3A7B003ED343FD9, ped, 0x14683CDF, true, true, true)
     end
 
-    RemoveAllPedWeapons(ped, true, true)
 end)
 
 RegisterNetEvent("lawmen:UnjailPlayer")
@@ -518,7 +515,6 @@ CreateThread(function()
                     ClearPedTasksImmediately(ped)
                     ClearPedSecondaryTask(ped)
                     SetCurrentPedWeapon(ped, GetHashKey('WEAPON_UNARMED'), true)
-                    RemoveAllPedWeapons(ped, true)
 
                     local broom = GetClosestObjectOfType(GetEntityCoords(ped), 2.0, GetHashKey("prop_broom"), false, false, false)
                     if broom ~= 0 then
@@ -965,4 +961,3 @@ AddEventHandler("onResourceStop", function(resourceName)
         RemoveCommisaryBlip()
     end
 end)
-
