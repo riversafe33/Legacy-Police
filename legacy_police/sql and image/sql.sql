@@ -7,4 +7,5 @@ CREATE TABLE IF NOT EXISTS `jail` (
 );
 
 INSERT IGNORE INTO `items` (`item`, `label`, `limit`, `can_remove`, `type`, `usable`, `metadata`, `desc`, `weight`) VALUES
+("lockpick", "Lockpick", 200, 1, "item_standard", 1, "{}", "Used to open locks and handcuffs", 0.1),
 ("handcuffs", "Handcuffs", 200, 1, "item_standard", 1, "{}", "They are used to handcuff the prisoner", 0.1);
