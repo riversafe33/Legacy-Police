@@ -1,32 +1,10 @@
-local IsSearching = false
-
-VORPcore = {}
-TriggerEvent("getCore", function(core)
-    VORPcore = core
-end)
-
-VORPutils = {}
-TriggerEvent("getUtils", function(utils)
-    VORPutils = utils
-end)
-
 function HandcuffPlayer()
-    MenuData.CloseAll()
-    Inmenu = false
     local closestPlayer, closestDistance = GetClosestPlayer()
     local targetplayerid = GetPlayerServerId(closestPlayer)
     local isDead = IsEntityDead(PlayerPedId())
 
-    if closestDistance <= 3.0 then
-        if not isDead then
-            TriggerServerEvent('lawmen:handcuff', targetplayerid)
-            if not IsSearching then
-                IsSearching = true
-                CuffPlayer(closestPlayer)
-            elseif IsSearching then
-                IsSearching = false
-            end
-        end
+    if closestDistance <= 3.0 and not isDead then
+        TriggerServerEvent('lawmen:handcuff', targetplayerid)
     end
 end
 
@@ -57,47 +35,6 @@ function GetClosestPlayer()
     end
     return closestPlayer, closestDistance
 end
-
-Citizen.CreateThread(function()
-    local showingSearch = false
-
-    while true do
-        local playerPed = PlayerPedId()
-        local playerCoords = GetEntityCoords(playerPed)
-        local targetPed = GetPlayerPed(closestPlayer)
-        local targetCoords = GetEntityCoords(targetPed)
-        local distance = #(playerCoords - targetCoords)
-        local nearTarget = false
-
-        if distance <= 1.5 then
-            nearTarget = true
-
-            if not showingSearch and not IsEntityDead(playerPed) and IsSearching and not Inmenu and not InWagon and IsCuffed then
-                SendNUIMessage({
-                    type = "showSearch",
-                    text = ConfigMain.Text.searchplayer
-                })
-                showingSearch = true
-            end
-
-            if IsControlJustReleased(0, 0x760A9C6F) and IsCuffed then
-                TriggerServerEvent('lawmen:grabdata', GetPlayerServerId(closestPlayer))
-                Citizen.Wait(200)
-
-                if Takenmoney then
-                    SearchMenu(Takenmoney)
-                end
-            end
-        end
-
-        if (not nearTarget or not IsCuffed) and showingSearch then
-            SendNUIMessage({ type = "hideSearch" })
-            showingSearch = false
-        end
-
-        Citizen.Wait(nearTarget and IsCuffed and 0 or 500)
-    end
-end)
 
 function CheckTable(table, element)
     for k, v in pairs(table) do
