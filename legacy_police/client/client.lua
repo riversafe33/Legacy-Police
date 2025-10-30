@@ -97,6 +97,41 @@ AddEventHandler('lawmen:PlayerInWagon', function()
     end
 end)
 
+Citizen.CreateThread(function()
+    local showingSearch = false
+    while true do
+        local playerPed = PlayerPedId()
+        local playerCoords = GetEntityCoords(playerPed)
+
+        local closestPlayer, closestDistance = GetClosestPlayer()
+        if closestPlayer then
+            local targetPed = GetPlayerPed(closestPlayer)
+            local targetCoords = GetEntityCoords(targetPed)
+            local distance = #(playerCoords - targetCoords)
+
+            if distance <= 1.5 and IsHandcuffed then
+                if not showingSearch then
+                    SendNUIMessage({ type = "showSearch", text = ConfigMain.Text.searchplayer })
+                    showingSearch = true
+                end
+
+                if IsControlJustReleased(0, 0x760A9C6F) then
+                    TriggerServerEvent('lawmen:grabdata', GetPlayerServerId(closestPlayer))
+                    Citizen.Wait(200)
+                    if Takenmoney then
+                        SearchMenu(Takenmoney)
+                    end
+                end
+            elseif showingSearch then
+                SendNUIMessage({ type = "hideSearch" })
+                showingSearch = false
+            end
+        end
+
+        Citizen.Wait(closestPlayer and IsHandcuffed and 0 or 500)
+    end
+end)
+
 RegisterNetEvent('lawmen:StartSearch', function()
     local closestPlayer, closestDistance = GetClosestPlayer()
     searchid = GetPlayerServerId(closestPlayer)
