@@ -69,18 +69,17 @@ end)
 
 RegisterNetEvent('lawmen:PlayerInWagon')
 AddEventHandler('lawmen:PlayerInWagon', function()
-    if not IsHandcuffed then
+    local ped = PlayerPedId()
+
+    if not IsPedCuffed(ped) then
         return
     end
 
-    local ped = PlayerPedId()
     local coords = GetEntityCoords(ped)
     local closestWagon = GetClosestVehicle(coords)
 
     if DoesEntityExist(ped) and DoesEntityExist(closestWagon) then
-        local vehicle = IsPedInVehicle(ped, closestWagon, false)
-
-        if not vehicle then
+        if not IsPedInVehicle(ped, closestWagon, false) then
             local rearSeats = {1, 2, 3, 4, 5, 6}
             for i = 1, #rearSeats do
                 if IsVehicleSeatFree(closestWagon, rearSeats[i]) then
@@ -99,36 +98,43 @@ end)
 
 Citizen.CreateThread(function()
     local showingSearch = false
+
     while true do
         local playerPed = PlayerPedId()
         local playerCoords = GetEntityCoords(playerPed)
-
         local closestPlayer, closestDistance = GetClosestPlayer()
-        if closestPlayer then
+        local shouldShow = false
+        local targetServerId = nil
+
+        if closestPlayer and closestDistance <= 3.0 then
             local targetPed = GetPlayerPed(closestPlayer)
-            local targetCoords = GetEntityCoords(targetPed)
-            local distance = #(playerCoords - targetCoords)
 
-            if distance <= 1.5 and IsPedCuffed(playerPed) then
-                if not showingSearch then
-                    SendNUIMessage({ type = "showSearch", text = ConfigMain.Text.searchplayer })
-                    showingSearch = true
-                end
-
-                if IsControlJustReleased(0, 0x760A9C6F) then
-                    TriggerServerEvent('rs_police:grabdata', GetPlayerServerId(closestPlayer))
-                    Citizen.Wait(200)
-                    if Takenmoney then
-                        SearchMenu(Takenmoney)
-                    end
-                end
-            elseif showingSearch then
-                SendNUIMessage({ type = "hideSearch" })
-                showingSearch = false
+            if IsPedCuffed(targetPed) then
+                shouldShow = true
+                targetServerId = GetPlayerServerId(closestPlayer)
             end
         end
 
-        Citizen.Wait(closestPlayer and IsPedCuffed(playerPed) and 0 or 500)
+        if shouldShow and not showingSearch then
+            SendNUIMessage({ 
+                type = "showSearch", 
+                text = ConfigMain.Text.searchplayercuff 
+            })
+            showingSearch = true
+        elseif (not shouldShow) and showingSearch then
+            SendNUIMessage({ type = "hideSearch" })
+            showingSearch = false
+        end
+
+        if showingSearch and IsControlJustReleased(0, 0x760A9C6F) then
+            TriggerServerEvent('lawmen:grabdata', GetPlayerServerId(closestPlayer))
+            Citizen.Wait(200)
+            if Takenmoney then
+                SearchMenu(Takenmoney)
+            end
+        end
+
+        Citizen.Wait(shouldShow and 0 or 500)
     end
 end)
 
@@ -179,6 +185,19 @@ MaleboneIndex = 458
 FemaleboneIndex = 500
 Rotationz = 30.0
 
+local function GetBadgeModel(jobName, grade)
+    for _, badgeData in pairs(ConfigMain.Badges) do
+        if badgeData.jobName == jobName then
+            for _, gradeData in pairs(badgeData.grades) do
+                if grade >= gradeData.min and grade <= gradeData.max then
+                    return gradeData.model
+                end
+            end
+        end
+    end
+    return nil
+end
+
 RegisterNetEvent("legacy_police:badgeon")
 AddEventHandler("legacy_police:badgeon", function(playerjob, jobgrade)
     Wait(60)
@@ -187,38 +206,27 @@ AddEventHandler("legacy_police:badgeon", function(playerjob, jobgrade)
     if not badgeactive then
         badgeactive = true
         Wait(5)
-        if playerjob == "police" and jobgrade <= 2 then
-            if IsPedMale(ped) then
-                Badge = CreateObject(GetHashKey("s_badgedeputy01x"), Badgex, Badgey, Badgez + 0.2, true, false, false)
-                AttachEntityToEntity(Badge, ped, MaleboneIndex, Badgex, Badgey, Badgez, -15.0, 0.0, Rotationz, true, true, false, true, 1, true)
-                BadgeCoords = GetEntityCoords(Badge)
-            else
-                Badge = CreateObject(GetHashKey("s_badgedeputy01x"), Badgex, Badgey, Badgez + 0.2, true, false, false)
-                AttachEntityToEntity(Badge, ped, FemaleboneIndex, Badgex, Badgey, Badgez, -15.0, 0.0, 30.0, false, true, false, true, 1, true)
-                BadgeCoords = GetEntityCoords(Badge)
+
+        local badgeModel = GetBadgeModel(playerjob, jobgrade)
+
+        if badgeModel then
+            local hash = GetHashKey(badgeModel)
+            RequestModel(hash)
+            while not HasModelLoaded(hash) do
+                Wait(5)
             end
-        elseif playerjob == "police" and jobgrade >= 3 and jobgrade <= 5 then
+
+            Badge = CreateObject(hash, Badgex, Badgey, Badgez + 0.2, true, false, false)
+
             if IsPedMale(ped) then
-                Badge = CreateObject(GetHashKey("s_badgesherif01x"), Badgex, Badgey, Badgez + 0.2, true, false, false)
-                AttachEntityToEntity(Badge, ped, MaleboneIndex, 0.17, -0.19, -0.25, -12.5, 0.0, 30.0, false, true, false, true, 1, true)
-                BadgeCoords = GetEntityCoords(Badge)
+                AttachEntityToEntity(Badge, ped, MaleboneIndex, Badgex, Badgey, Badgez, -12.5, 0.0, Rotationz, false, true, false, true, 1, true)
             else
-                Badge = CreateObject(GetHashKey("s_badgesherif01x"), Badgex, Badgey, Badgez + 0.2, true, false, false)
-                AttachEntityToEntity(Badge, ped, FemaleboneIndex, 0.17, -0.19, -0.25, -12.5, 0.0, 30.0, false, true, false, true, 1, true)
-                BadgeCoords = GetEntityCoords(Badge)
+                AttachEntityToEntity(Badge, ped, FemaleboneIndex, Badgex, Badgey, Badgez, -12.5, 0.0, Rotationz, false, true, false, true, 1, true)
             end
-        elseif playerjob == "marshal" and jobgrade ~= nil then
-            if IsPedMale(ped) then
-                Badge = CreateObject(GetHashKey("s_badgeusmarshal01x"), Badgex, Badgey, Badgez + 0.2, true, false, false)
-                AttachEntityToEntity(Badge, ped, MaleboneIndex, 0.17, -0.19, -0.25, -12.5, 0.0, 30.0, false, true, false, true, 1, true)
-                BadgeCoords = GetEntityCoords(Badge)
-            else
-                Badge = CreateObject(GetHashKey("s_badgeusmarshal01x"), Badgex, Badgey, Badgez + 0.2, true, false, false)
-                AttachEntityToEntity(Badge, ped, FemaleboneIndex, 0.17, -0.19, -0.25, -12.5, 0.0, 30.0, false, true, false, true, 1, true)
-                BadgeCoords = GetEntityCoords(Badge)
-            end
+
+            BadgeCoords = GetEntityCoords(Badge)
+            TriggerEvent("vorp:NotifyLeft", ConfigMain.Text.Notify.titlebadge, ConfigMain.Text.Notify.badgeon, "generic_textures", "tick", 2000, "COLOR_GREEN")
         end
-        TriggerEvent("vorp:NotifyLeft", ConfigMain.Text.Notify.titlebadge, ConfigMain.Text.Notify.badgeon, "generic_textures", "tick", 2000, "COLOR_GREEN")
     else
         DeleteObject(Badge)
         badgeactive = false
@@ -239,59 +247,66 @@ RegisterCommand(ConfigMain.ondutycommand, function()
     TriggerEvent('lawmen:goonduty')
 end)
 
-function StartBadgeAdjustment()
+RegisterCommand(ConfigMain.adjustbadgecommand, function()
     local ped = PlayerPedId()
 
-    if PoliceOnDuty and badgeactive then
-        if not display then
-            display = true
-
-            SendNUIMessage({
-                action = "showpanel",
-                title = ConfigMain.ControlsPanel.title,
-                controls = ConfigMain.ControlsPanel.controls
-            })
-
-            Citizen.CreateThread(function()
-                local lastX, lastY, lastZ = nil, nil, nil
-                local lastRotZ = nil
-
-                while display and badgeactive do
-                    Wait(0)
-
-                    for _, keyCode in pairs(ConfigMain.Keys) do
-                        DisableControlAction(0, keyCode, true)
-                    end
-
-                    if IsDisabledControlJustPressed(0, ConfigMain.Keys.finistadjust) then
-                        display = false
-                        SendNUIMessage({ action = "hidepanel" })
-                        break
-                    end
-
-                    if IsDisabledControlJustPressed(0, ConfigMain.Keys.up) then Badgez = Badgez + 0.01 end
-                    if IsDisabledControlJustPressed(0, ConfigMain.Keys.down) then Badgez = Badgez - 0.01 end
-                    if IsDisabledControlJustPressed(0, ConfigMain.Keys.left) then Badgex = Badgex + 0.01 end
-                    if IsDisabledControlJustPressed(0, ConfigMain.Keys.right) then Badgex = Badgex - 0.01 end
-                    if IsDisabledControlJustPressed(0, ConfigMain.Keys.int) then Badgey = Badgey + 0.01 end
-                    if IsDisabledControlJustPressed(0, ConfigMain.Keys.out) then Badgey = Badgey - 0.01 end
-                    if IsDisabledControlJustPressed(0, ConfigMain.Keys.rotateleft) then Rotationz = Rotationz + 2.0 end
-                    if IsDisabledControlJustPressed(0, ConfigMain.Keys.rotateright) then Rotationz = Rotationz - 2.0 end
-
-                    if Badgex ~= lastX or Badgey ~= lastY or Badgez ~= lastZ or Rotationz ~= lastRotZ then
-                        local boneIndex = IsPedMale(ped) and MaleboneIndex or FemaleboneIndex
-                        AttachEntityToEntity(Badge, ped, boneIndex, Badgex, Badgey, Badgez, -15.0, 0.0, Rotationz, true, true, false, true, 1, true)
-                        lastX, lastY, lastZ = Badgex, Badgey, Badgez
-                        lastRotZ = Rotationz
-                    end
-                end
-            end)
-        else
-            display = false
-            SendNUIMessage({ action = "hidepanel" })
-        end
+    if not PoliceOnDuty then
+        return
     end
-end
+
+    if not badgeactive or not Badge then
+        return
+    end
+
+    if display then
+        display = false
+        SendNUIMessage({ action = "hidepanel" })
+        return
+    end
+
+    display = true
+
+    SendNUIMessage({
+        action = "showpanel",
+        title = ConfigMain.ControlsPanel.title,
+        controls = ConfigMain.ControlsPanel.controls
+    })
+
+    Citizen.CreateThread(function()
+        local lastX, lastY, lastZ = nil, nil, nil
+        local lastRotZ = nil
+
+        while display and badgeactive do
+            Wait(0)
+
+            for _, keyCode in pairs(ConfigMain.Keys) do
+                DisableControlAction(0, keyCode, true)
+            end
+
+            if IsDisabledControlJustPressed(0, ConfigMain.Keys.finistadjust) then
+                display = false
+                SendNUIMessage({ action = "hidepanel" })
+                break
+            end
+
+            if IsDisabledControlJustPressed(0, ConfigMain.Keys.up) then Badgez = Badgez + 0.01 end
+            if IsDisabledControlJustPressed(0, ConfigMain.Keys.down) then Badgez = Badgez - 0.01 end
+            if IsDisabledControlJustPressed(0, ConfigMain.Keys.left) then Badgex = Badgex + 0.01 end
+            if IsDisabledControlJustPressed(0, ConfigMain.Keys.right) then Badgex = Badgex - 0.01 end
+            if IsDisabledControlJustPressed(0, ConfigMain.Keys.int) then Badgey = Badgey + 0.01 end
+            if IsDisabledControlJustPressed(0, ConfigMain.Keys.out) then Badgey = Badgey - 0.01 end
+            if IsDisabledControlJustPressed(0, ConfigMain.Keys.rotateleft) then Rotationz = Rotationz + 2.0 end
+            if IsDisabledControlJustPressed(0, ConfigMain.Keys.rotateright) then Rotationz = Rotationz - 2.0 end
+
+            if Badgex ~= lastX or Badgey ~= lastY or Badgez ~= lastZ or Rotationz ~= lastRotZ then
+                local boneIndex = IsPedMale(ped) and MaleboneIndex or FemaleboneIndex
+                AttachEntityToEntity(Badge, ped, boneIndex, Badgex, Badgey, Badgez, -15.0, 0.0, Rotationz, true, true, false, true, 1, true)
+                lastX, lastY, lastZ = Badgex, Badgey, Badgez
+                lastRotZ = Rotationz
+            end
+        end
+    end)
+end, false)
 
 RegisterNetEvent("lawmen:gooffduty")
 AddEventHandler("lawmen:gooffduty", function()
