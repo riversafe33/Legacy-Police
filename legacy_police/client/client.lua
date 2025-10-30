@@ -109,14 +109,14 @@ Citizen.CreateThread(function()
             local targetCoords = GetEntityCoords(targetPed)
             local distance = #(playerCoords - targetCoords)
 
-            if distance <= 1.5 and IsHandcuffed then
+            if distance <= 1.5 and IsPedCuffed(playerPed) then
                 if not showingSearch then
                     SendNUIMessage({ type = "showSearch", text = ConfigMain.Text.searchplayer })
                     showingSearch = true
                 end
 
                 if IsControlJustReleased(0, 0x760A9C6F) then
-                    TriggerServerEvent('lawmen:grabdata', GetPlayerServerId(closestPlayer))
+                    TriggerServerEvent('rs_police:grabdata', GetPlayerServerId(closestPlayer))
                     Citizen.Wait(200)
                     if Takenmoney then
                         SearchMenu(Takenmoney)
@@ -128,7 +128,7 @@ Citizen.CreateThread(function()
             end
         end
 
-        Citizen.Wait(closestPlayer and IsHandcuffed and 0 or 500)
+        Citizen.Wait(closestPlayer and IsPedCuffed(playerPed) and 0 or 500)
     end
 end)
 
