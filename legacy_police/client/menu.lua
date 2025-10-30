@@ -56,8 +56,6 @@ function OpenPoliceMenu()
             if (data.current.value == 'star') then
                 menu.close()
                 TriggerServerEvent('legacy_police:checkjob')
-                Wait(500)
-                StartBadgeAdjustment()
             elseif (data.current.value == 'cuff') then
                 local closestPlayer, closestDistance = GetClosestPlayer()
                 if closestPlayer ~= -1 and closestDistance <= 3.0 then
