@@ -3,11 +3,6 @@ local Tele = ConfigMain.Text.Menu.vartrue
 local timeinjail = 0
 local Playerid = 0
 local jailname = ConfigMain.Text.Menu.none
-local VORPcore = {}
-
-TriggerEvent("getCore", function(core)
-    VORPcore = core
-end)
 
 PlayerIDInput = {
     type = "enableinput",
