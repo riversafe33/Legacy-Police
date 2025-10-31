@@ -8,19 +8,18 @@ files {
     'html/index.html'
 }
 
-client_script {
-    'client/client.lua',
-    'client/functions.lua',
-    'client/menu.lua'
-
-}
-
-server_script {
-    'server/server.lua'
-}
-
-shared_script {
+client_scripts {
     'config/ConfigMain.lua',
     'config/ConfigJail.lua',
     'config/ConfigCabinets.lua',
+    'client/client.lua',
+    'client/functions.lua',
+    'client/menu.lua'
+}
+
+server_scripts {
+    'config/ConfigMain.lua',
+    'config/ConfigJail.lua',
+    'config/ConfigCabinets.lua',
+    'server/server.lua'
 }
