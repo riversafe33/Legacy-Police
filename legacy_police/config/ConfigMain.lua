@@ -1,10 +1,10 @@
 ConfigMain = {}
 
-ConfigMain.ondutycommand = "onduty"           -- Command to go on duty
-ConfigMain.offdutycommand = "offduty"         -- Command to go off duty
-ConfigMain.openpolicemenu = "pmenu"           -- Can only be used if you're an admin or have a job listed in ConfigMain.allowedJobs
-ConfigMain.delwagoncommand = "delwagon"       -- Command to delete the spawned wagon
-ConfigMain.adjustbadgecommand = "adjustbadge" -- Command to adjust the badge
+ConfigMain.ondutycommand = "onduty"            -- Command to go on duty
+ConfigMain.offdutycommand = "offduty"          -- Command to go off duty
+ConfigMain.openpolicemenu = "pmenu"            -- Can only be used if you're an admin or have a job listed in ConfigMain.allowedJobs
+ConfigMain.delwagoncommand = "delwagon"        -- Command to delete the spawned wagon
+ConfigMain.adjustbadgecommand = "adjustbadge"  -- Command to adjust the badge
 
 ConfigMain.Keys = {
     up = 0x6319DB71,           -- UP
