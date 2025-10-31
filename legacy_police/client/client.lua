@@ -216,7 +216,7 @@ AddEventHandler("legacy_police:badgeon", function(playerjob, jobgrade)
                 Wait(5)
             end
 
-            Badge = CreateObject(hash, Badgex, Badgey, Badgez + 0.2, true, false, false)
+            Badge = CreateObject(hash, Badgex, Badgey, Badgez + 0.2, true, true, false, false)
 
             if IsPedMale(ped) then
                 AttachEntityToEntity(Badge, ped, MaleboneIndex, Badgex, Badgey, Badgez, -12.5, 0.0, Rotationz, false, true, false, true, 1, true)
